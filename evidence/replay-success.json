@@ -1,0 +1,15 @@
+{
+  "status": "success",
+  "code": null,
+  "step_id": null,
+  "capability_id": "member.savings_balance.lookup",
+  "outputs": {
+    "savings_balance": 12450.32
+  },
+  "expected": null,
+  "observed": null,
+  "error_message": null,
+  "execution_time_ms": 571.8739032745361,
+  "evidence_path": null,
+  "timestamp": 1786654909.1446316
+}

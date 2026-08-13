@@ -1,0 +1,107 @@
+{
+  "goal": "Open a new savings sub-account for member 12345",
+  "capability_id": "member.subaccount.create",
+  "trajectory": [
+    {
+      "action": "navigate",
+      "url": "http://127.0.0.1:8000/members",
+      "target": {},
+      "value": null,
+      "input_param": null,
+      "output_param": null,
+      "is_risky": false,
+      "description": "Navigate to workflow start: http://127.0.0.1:8000/members"
+    },
+    {
+      "action": "fill",
+      "url": null,
+      "target": {
+        "role": "textbox",
+        "label": "Search by Member ID",
+        "css_fallback": "#search_member_id_input"
+      },
+      "value": "{{member_id}}",
+      "input_param": "member_id",
+      "output_param": null,
+      "expectation": null,
+      "is_risky": false,
+      "description": "Search member ID"
+    },
+    {
+      "action": "click",
+      "url": null,
+      "target": {
+        "role": "button",
+        "name": "Search Member",
+        "css_fallback": "#btn-search-member"
+      },
+      "value": null,
+      "input_param": null,
+      "output_param": null,
+      "expectation": null,
+      "is_risky": false,
+      "description": "Submit search"
+    },
+    {
+      "action": "click",
+      "url": null,
+      "target": {
+        "role": "link",
+        "name": "View Details & Accounts",
+        "text": "View Details"
+      },
+      "value": null,
+      "input_param": null,
+      "output_param": null,
+      "expectation": null,
+      "is_risky": false,
+      "description": "View member details page"
+    },
+    {
+      "action": "click",
+      "url": null,
+      "target": {
+        "role": "link",
+        "name": "Open New Sub-Account",
+        "css_fallback": "#btn-open-new-subaccount"
+      },
+      "value": null,
+      "input_param": null,
+      "output_param": null,
+      "expectation": null,
+      "is_risky": true,
+      "description": "Click open sub-account button"
+    },
+    {
+      "action": "fill",
+      "url": null,
+      "target": {
+        "role": "textbox",
+        "label": "Sub-Account Label / Custom Name",
+        "css_fallback": "#subaccount_name_input"
+      },
+      "value": "Secondary Savings",
+      "input_param": "subaccount_name",
+      "output_param": null,
+      "expectation": null,
+      "is_risky": false,
+      "description": "Enter subaccount custom label"
+    },
+    {
+      "action": "click",
+      "url": null,
+      "target": {
+        "role": "button",
+        "name": "Submit & Create Sub-Account",
+        "css_fallback": "#btn-submit-create-subaccount"
+      },
+      "value": null,
+      "input_param": null,
+      "output_param": null,
+      "expectation": null,
+      "is_risky": true,
+      "description": "Submit sub-account creation form (Risky action)"
+    }
+  ],
+  "total_steps": 7
+}

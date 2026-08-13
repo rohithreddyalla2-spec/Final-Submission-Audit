@@ -1,0 +1,21 @@
+{
+  "initial_pause": {
+    "run_id": "member.subaccount.create",
+    "step_id": "step_3_submit_risky",
+    "status": "PAUSED",
+    "reason": "Risky action detected ('create'). Requires human approval.",
+    "timestamp": 1786659261.197308,
+    "screenshot_path": "evidence\\handoff.png",
+    "human_action_taken": null
+  },
+  "final_resumption": {
+    "run_id": "member.subaccount.create",
+    "step_id": "step_3_submit_risky",
+    "status": "RESUMED",
+    "reason": "Risky action detected ('create'). Requires human approval.",
+    "timestamp": 1786659261.1983354,
+    "screenshot_path": "evidence\\handoff.png",
+    "human_action_taken": "Auto-approved via test mode"
+  },
+  "approved": true
+}

@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0",
+  "capability_id": "member.savings_balance.lookup",
+  "description": "Automated capability for goal: Look up member 12345 and read their current savings balance",
+  "created_at": "2026-08-13T21:01:48.457025Z",
+  "target": {
+    "surface": "browser",
+    "application": "demo-bank"
+  },
+  "inputs": {
+    "member_id": {
+      "type": "string",
+      "required": true,
+      "default": "12345",
+      "description": "Target Member ID"
+    }
+  },
+  "outputs": {
+    "savings_balance": {
+      "type": "number",
+      "description": "Current savings account balance"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Currency code (USD)"
+    }
+  },
+  "steps": [
+    {
+      "step_id": "step_1_navigate",
+      "action": "navigate",
+      "locator": null,
+      "url": "http://127.0.0.1:8000/members",
+      "value": null,
+      "input_param": null,
+      "output_param": null,
+      "expectation": null,
+      "is_risky": false,
+      "description": "Navigate to workflow start: http://127.0.0.1:8000/members"
+    },
+    {
+      "step_id": "step_2_fill",
+      "action": "fill",
+      "locator": {
+        "role": "textbox",
+        "name": null,
+        "label": "Search by Member ID",
+        "semantic_attr": null,
+        "text": null,
+        "css_fallback": "#search_member_id_input"
+      },
+      "url": null,
+      "value": "{{member_id}}",
+      "input_param": "member_id",
+      "output_param": null,
+      "expectation": null,
+      "is_risky": false,
+      "description": "Enter Member ID to search"
+    },
+    {
+      "step_id": "step_3_click",
+      "action": "click",
+      "locator": {
+        "role": "button",
+        "name": "Search Member",
+        "label": null,
+        "semantic_attr": null,
+        "text": null,
+        "css_fallback": "#btn-search-member"
+      },
+      "url": null,
+      "value": null,
+      "input_param": null,
+      "output_param": null,
+      "expectation": null,
+      "is_risky": false,
+      "description": "Submit member search query"
+    },
+    {
+      "step_id": "step_4_click",
+      "action": "click",
+      "locator": {
+        "role": "link",
+        "name": "View Details & Accounts",
+        "label": null,
+        "semantic_attr": null,
+        "text": "View Details",
+        "css_fallback": null
+      },
+      "url": null,
+      "value": null,
+      "input_param": null,
+      "output_param": null,
+      "expectation": null,
+      "is_risky": false,
+      "description": "View member details page"
+    },
+    {
+      "step_id": "step_5_read",
+      "action": "read",
+      "locator": {
+        "role": null,
+        "name": null,
+        "label": null,
+        "semantic_attr": {
+          "id": "val-savings-balance"
+        },
+        "text": null,
+        "css_fallback": "#val-savings-balance"
+      },
+      "url": null,
+      "value": null,
+      "input_param": null,
+      "output_param": "savings_balance",
+      "expectation": null,
+      "is_risky": false,
+      "description": "Read member primary savings balance"
+    }
+  ],
+  "checkpoint": {
+    "type": "text_contains",
+    "locator": null,
+    "expected_value": "Member Account Details",
+    "description": null
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "status": "business_outcome",
+  "code": "MEMBER_NOT_FOUND",
+  "step_id": "step_3_click",
+  "capability_id": "member.savings_balance.lookup",
+  "outputs": {},
+  "expected": "Member details page",
+  "observed": "Member not found in database",
+  "error_message": "Member ID was not found in records.",
+  "execution_time_ms": 291.81551933288574,
+  "evidence_path": null,
+  "timestamp": 1786654909.5454078,
+  "evidence_screenshot": "evidence\\replay-error.png"
+}
