@@ -86,19 +86,9 @@ def test_member_not_found_business_outcome(surface):
     assert result.status == ReplayStatus.BUSINESS_OUTCOME
     assert result.code == ErrorCode.MEMBER_NOT_FOUND
 
-def set_fault_state(**kwargs):
-    """Set global fault state in memory and sync via HTTP to running server."""
-    for k, v in kwargs.items():
-        setattr(GLOBAL_FAULT_STATE, k, v)
-    try:
-        import requests
-        requests.post("http://127.0.0.1:8000/admin/inject-state", json=GLOBAL_FAULT_STATE.model_dump(), timeout=1)
-    except Exception:
-        pass
-
 def test_validation_error_fault(surface):
     """Test validation error fault injection."""
-    set_fault_state(validation_error=True)
+    GLOBAL_FAULT_STATE.validation_error = True
     artifact = CapabilityArtifact(
         capability_id="subaccount.create",
         description="Create sub-account",
@@ -123,7 +113,7 @@ def test_validation_error_fault(surface):
 
 def test_session_timeout_fault(surface):
     """Test session timeout fault injection leading to HARD_FAILURE."""
-    set_fault_state(session_timeout=True)
+    GLOBAL_FAULT_STATE.session_timeout = True
     artifact = get_lookup_artifact()
     engine = ReplayEngine(surface=surface)
 
@@ -134,7 +124,7 @@ def test_session_timeout_fault(surface):
 
 def test_unexpected_dialog_fault(surface):
     """Test blocking maintenance dialog fault injection leading to RECOVERABLE_FAILURE."""
-    set_fault_state(unexpected_dialog=True)
+    GLOBAL_FAULT_STATE.unexpected_dialog = True
     artifact = get_lookup_artifact()
     engine = ReplayEngine(surface=surface)
 
@@ -145,7 +135,7 @@ def test_unexpected_dialog_fault(surface):
 
 def test_application_error_fault(surface):
     """Test 500 internal server error fault injection leading to HARD_FAILURE."""
-    set_fault_state(application_error=True)
+    GLOBAL_FAULT_STATE.application_error = True
     artifact = get_lookup_artifact()
     engine = ReplayEngine(surface=surface)
 
@@ -153,4 +143,3 @@ def test_application_error_fault(surface):
 
     assert result.status == ReplayStatus.HARD_FAILURE
     assert result.code == ErrorCode.APPLICATION_ERROR
-

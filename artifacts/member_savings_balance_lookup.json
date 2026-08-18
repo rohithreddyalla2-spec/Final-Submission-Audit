@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "capability_id": "member.savings_balance.lookup",
   "description": "Automated capability for goal: Look up member 12345 and read their current savings balance",
-  "created_at": "2026-08-13T21:01:48.457025Z",
+  "created_at": "2026-08-13T22:57:15.408211Z",
   "target": {
     "surface": "browser",
     "application": "demo-bank"

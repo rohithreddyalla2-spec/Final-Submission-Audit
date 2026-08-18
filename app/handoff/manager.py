@@ -3,8 +3,8 @@ import os
 import json
 import time
 from enum import Enum
-from typing import Dict, Any, Optional, Callable
-from pydantic import BaseModel, Field
+from typing import Any, Optional, Callable
+from pydantic import BaseModel
 
 class HandoffStatus(str, Enum):
     RUNNING = "RUNNING"

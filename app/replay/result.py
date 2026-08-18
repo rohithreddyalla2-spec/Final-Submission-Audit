@@ -1,6 +1,6 @@
 """Typed Replay Result & Error Taxonomy Models."""
 from enum import Enum
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from pydantic import BaseModel, Field
 
 class ReplayStatus(str, Enum):

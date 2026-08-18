@@ -1,8 +1,9 @@
 """Pytest fixtures for Demo Bank server and Playwright surface test environment."""
 import os
+import re
 import time
-import socket
 import threading
+import signal
 import subprocess
 import pytest
 import uvicorn
@@ -13,31 +14,50 @@ from app.surface.playwright_surface import PlaywrightSurface
 
 SERVER_HOST = "127.0.0.1"
 SERVER_PORT = 8000
+DEMO_BANK_URL = f"http://{SERVER_HOST}:{SERVER_PORT}"
 
-def kill_process_on_port(port: int = SERVER_PORT):
-    """Ensure port is free by terminating any stale process listening on it."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        res = s.connect_ex((SERVER_HOST, port))
-        if res != 0:
-            return  # Port is free
 
+def _is_port_in_use(host: str, port: int) -> bool:
+    """Check if a port is already in use on the given host."""
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(1)
     try:
-        if os.name == "nt":
-            netstat_cmd = r"C:\Windows\System32\netstat.exe -ano"
-            out = subprocess.check_output(netstat_cmd, shell=True).decode()
-            lines = out.strip().splitlines()
-            pids = set()
-            for line in lines:
-                parts = line.split()
-                if len(parts) >= 5 and "LISTENING" in parts and f":{port}" in parts[1]:
-                    pids.add(parts[-1])
-            for pid in pids:
-                if pid != "0" and pid != str(os.getpid()):
-                    taskkill_cmd = f"C:\\Windows\\System32\\taskkill.exe /F /PID {pid}"
-                    subprocess.run(taskkill_cmd, shell=True, capture_output=True)
-        else:
-            subprocess.run(f"fuser -k {port}/tcp", shell=True, capture_output=True)
-        time.sleep(0.5)
+        s.connect((host, port))
+        s.close()
+        return True
+    except (ConnectionRefusedError, OSError, TimeoutError):
+        return False
+
+
+def _kill_process_on_port(host: str, port: int) -> None:
+    """Kill any process listening on the given port."""
+    # Try taskkill on python processes first
+    try:
+        result = subprocess.run(
+            ["taskkill", "/F", "/IM", "python.exe"], capture_output=True, text=True, timeout=5
+        )
+        # If taskkill failed (no matching process), that's fine
+    except Exception:
+        pass
+    # Try to find and kill the specific process on the port using netstat
+    try:
+        result = subprocess.run(
+            ["netstat", "-ano"], capture_output=True, text=True, timeout=5
+        )
+        # Find the PID listening on our port
+        lines = result.stdout.split('\n')
+        for line in lines:
+            # Format:  TCP    0.0.0.0:8000    0.0.0.0:0      LISTENING       12345
+            parts = line.split()
+            if len(parts) >= 5 and parts[1].endswith(f":{port}"):
+                try:
+                    pid = int(parts[-1])
+                    if pid > 0 and pid != os.getpid():
+                        os.kill(pid, signal.SIGKILL)
+                except (ValueError, ProcessLookupError, PermissionError):
+                    pass
+                break
     except Exception:
         pass
 
@@ -46,73 +66,75 @@ class ServerThread(threading.Thread):
     def __init__(self):
         super().__init__()
         self.server = None
-        self.exception = None
+        self.error = None
 
     def run(self):
         try:
-            config = uvicorn.Config(fastapi_app, host=SERVER_HOST, port=SERVER_PORT, log_level="error")
+            config = uvicorn.Config(
+                fastapi_app, host=SERVER_HOST, port=SERVER_PORT, log_level="error"
+            )
             self.server = uvicorn.Server(config)
             self.server.run()
         except Exception as e:
-            self.exception = e
+            self.error = e
 
-    def stop(self):
-        if self.server:
-            self.server.should_exit = True
-
-def reset_global_fault_states():
-    """Reset fault states both in Python memory and via HTTP endpoint."""
-    GLOBAL_FAULT_STATE.session_timeout = False
-    GLOBAL_FAULT_STATE.unexpected_dialog = False
-    GLOBAL_FAULT_STATE.application_error = False
-    GLOBAL_FAULT_STATE.transient_load_failure = False
-    GLOBAL_FAULT_STATE.validation_error = False
-    try:
-        import requests
-        requests.post(f"http://{SERVER_HOST}:{SERVER_PORT}/admin/inject-state", json=GLOBAL_FAULT_STATE.model_dump(), timeout=1)
-    except Exception:
-        pass
 
 @pytest.fixture(scope="session", autouse=True)
 def start_demo_bank_server():
     """Start FastAPI Demo Bank server in background thread for test session."""
-    kill_process_on_port(SERVER_PORT)
+    # Kill any stale process on port 8000 to avoid port conflicts
+    if _is_port_in_use(SERVER_HOST, SERVER_PORT):
+        _kill_process_on_port(SERVER_HOST, SERVER_PORT)
+        time.sleep(0.5)  # Allow port to free
 
     server_thread = ServerThread()
     server_thread.daemon = True
     server_thread.start()
 
-    # Wait for server to be responsive
-    start_time = time.time()
-    server_ready = False
-    while time.time() - start_time < 5.0:
-        if server_thread.exception:
-            raise RuntimeError(f"Server thread failed with exception: {server_thread.exception}")
+    # Wait for server to be actually ready, not just spawned
+    for _ in range(20):
+        if server_thread.error is not None:
+            raise RuntimeError(
+                f"Demo bank server failed to start: {server_thread.error}"
+            )
+        import urllib.request
         try:
-            import urllib.request
-            with urllib.request.urlopen(f"http://{SERVER_HOST}:{SERVER_PORT}/members", timeout=1) as resp:
-                if resp.status == 200:
-                    server_ready = True
-                    break
+            r = urllib.request.urlopen(f"{DEMO_BANK_URL}/login", timeout=1)
+            if r.status in (200, 303, 404, 500):
+                break
         except Exception:
-            time.sleep(0.1)
-
-    if not server_ready:
-        raise RuntimeError(f"Demo Bank server failed to respond on http://{SERVER_HOST}:{SERVER_PORT} within 5s")
+            pass
+        time.sleep(0.5)
+    else:
+        raise RuntimeError("Demo bank server did not become ready within 10 seconds")
 
     yield
 
-    # Clean teardown
-    reset_global_fault_states()
-    server_thread.stop()
-    server_thread.join(timeout=3.0)
+    # Clean shutdown: signal the server to stop
+    if server_thread.server:
+        try:
+            import httpx
+            httpx.get(f"{DEMO_BANK_URL}/logout", timeout=2)
+        except Exception:
+            pass
+    # Reset fault state at end of session
+    GLOBAL_FAULT_STATE.session_timeout = False
+    GLOBAL_FAULT_STATE.unexpected_dialog = False
+    GLOBAL_FAULT_STATE.application_error = False
+    GLOBAL_FAULT_STATE.transient_load_failure = False
+    GLOBAL_FAULT_STATE.validation_error = False
+
 
 @pytest.fixture(autouse=True)
 def reset_fault_states():
-    """Reset fault states before and after each test."""
-    reset_global_fault_states()
+    """Reset fault states before each test."""
+    GLOBAL_FAULT_STATE.session_timeout = False
+    GLOBAL_FAULT_STATE.unexpected_dialog = False
+    GLOBAL_FAULT_STATE.application_error = False
+    GLOBAL_FAULT_STATE.transient_load_failure = False
+    GLOBAL_FAULT_STATE.validation_error = False
     yield
-    reset_global_fault_states()
+
 
 @pytest.fixture(scope="function")
 def surface():
@@ -124,4 +146,3 @@ def surface():
         surface_obj = PlaywrightSurface(page)
         yield surface_obj
         browser.close()
-

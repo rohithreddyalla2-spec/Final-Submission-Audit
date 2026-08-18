@@ -2,7 +2,6 @@
 import os
 import json
 import time
-from typing import Optional
 from app.safety.policy import SafetyPolicy
 from app.replay.result import ReplayResult
 

@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "capability_id": "member.subaccount.create",
   "description": "Automated capability for goal: Open a new savings sub-account for member 12345",
-  "created_at": "2026-08-13T21:01:52.967212Z",
+  "created_at": "2026-08-13T22:57:19.629169Z",
   "target": {
     "surface": "browser",
     "application": "demo-bank"

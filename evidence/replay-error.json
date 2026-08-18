@@ -7,8 +7,8 @@
   "expected": "Member details page",
   "observed": "Member not found in database",
   "error_message": "Member ID was not found in records.",
-  "execution_time_ms": 291.81551933288574,
+  "execution_time_ms": 244.28033828735352,
   "evidence_path": null,
-  "timestamp": 1786654909.5454078,
+  "timestamp": 1786661836.264842,
   "evidence_screenshot": "evidence\\replay-error.png"
 }

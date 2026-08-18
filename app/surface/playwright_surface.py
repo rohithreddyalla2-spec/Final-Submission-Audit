@@ -1,8 +1,7 @@
 """Playwright Surface Abstraction implementing multi-tiered locators."""
 import os
-import time
-from typing import Dict, Any, List, Optional
-from playwright.sync_api import Page, Locator, TimeoutError as PlaywrightTimeoutError
+from typing import Dict, Any, Optional
+from playwright.sync_api import Page, Locator
 from app.surface.base import Surface
 from app.surface.locator import LocatorSpec
 

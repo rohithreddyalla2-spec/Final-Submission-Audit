@@ -1,7 +1,7 @@
 """Typed, serializable, versioned Capability Artifact schema definition."""
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field
 from app.surface.locator import LocatorSpec
 

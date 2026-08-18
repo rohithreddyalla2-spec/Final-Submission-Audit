@@ -10,41 +10,26 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# Fix Windows console encoding for Unicode characters
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+
 from playwright.sync_api import sync_playwright
 
 from app.surface.playwright_surface import PlaywrightSurface
 from app.agent.agent import DiscoveryAgent
 from app.replay.engine import ReplayEngine
-from app.handoff.manager import HandoffManager
+from app.handoff.manager import HandoffManager, HandoffStatus
 from app.common.observability import EvidenceExporter
 from app.artifacts.schema import CapabilityArtifact
-
-import socket
-import threading
-import uvicorn
-from app.demo_bank.main import app as fastapi_app
 
 os.makedirs("evidence", exist_ok=True)
 os.makedirs("artifacts", exist_ok=True)
 
-def ensure_server_running():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        res = s.connect_ex(("127.0.0.1", 8000))
-        if res == 0:
-            return  # Server already running
-    def run_server():
-        uvicorn.run(fastapi_app, host="127.0.0.1", port=8000, log_level="error")
-    t = threading.Thread(target=run_server, daemon=True)
-    t.start()
-    time.sleep(1.5)
-
-ensure_server_running()
-
-PASS = "✓ PASS"
-FAIL = "✗ FAIL"
+PASS = "PASS"
+FAIL = "FAIL"
 
 results = {}
-
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
@@ -111,7 +96,7 @@ with sync_playwright() as p:
     # STEP 3: Member-Not-Found Business Outcome (member_id=99999)
     # ─────────────────────────────────────────────────────────
     print("\n" + "="*60)
-    print("STEP 3: Member-Not-Found → Structured Business Outcome")
+    print("STEP 3: Member-Not-Found to Structured Business Outcome")
     print("="*60)
     context = browser.new_context()
     page = context.new_page()
@@ -166,7 +151,10 @@ with sync_playwright() as p:
 
     if (res_handoff.status.value == "success"
             and "/subaccounts/confirmation" in final_url
-            and len(handoff_mgr.history) >= 2):
+            and len(handoff_mgr.history) >= 4
+            and handoff_mgr.history[-1].status == HandoffStatus.RESUMED
+            and handoff_mgr.history[-1].human_action_taken == "Auto-approved via test mode"
+            and handoff_mgr.history[-2].status == HandoffStatus.PAUSED):
         print(f"{PASS} Risky action triggered handoff → human approved → same session resumed → success")
         results["4_handoff"] = "PASS"
     else:
@@ -183,7 +171,7 @@ print("END-TO-END VERIFICATION SUMMARY")
 print("="*60)
 all_pass = True
 for k, v in results.items():
-    icon = "✓" if "PASS" in v else "✗"
+    icon = "P" if "PASS" in v else "F"
     print(f"  {icon} {k}: {v}")
     if "FAIL" in v:
         all_pass = False
@@ -197,8 +185,8 @@ for f in sorted(os.listdir("evidence")):
 
 print()
 if all_pass:
-    print("ALL CHECKS PASSED ✓")
+    print("ALL CHECKS PASSED")
     sys.exit(0)
 else:
-    print("SOME CHECKS FAILED ✗")
+    print("SOME CHECKS FAILED")
     sys.exit(1)

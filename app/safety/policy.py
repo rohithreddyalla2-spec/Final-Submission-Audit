@@ -1,7 +1,6 @@
 """Safety Policy Layer for enforcing domain allowlists, action policies, and PII redaction."""
-import re
 from urllib.parse import urlparse
-from typing import Dict, Any, List, Optional, Set, Union
+from typing import Any, Optional, Set, Union
 from pydantic import BaseModel, Field
 from app.artifacts.schema import StepAction
 from app.surface.locator import LocatorSpec

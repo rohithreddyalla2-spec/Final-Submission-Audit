@@ -1,7 +1,7 @@
 """FastAPI Demo Bank Application simulating legacy back-office UI."""
 import asyncio
 from typing import Optional
-from fastapi import FastAPI, Request, Response, Form, HTTPException, status
+from fastapi import FastAPI, Request, Response, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.demo_bank.models import MEMBERS_DB, Member, GLOBAL_FAULT_STATE, FaultInjectionState
 

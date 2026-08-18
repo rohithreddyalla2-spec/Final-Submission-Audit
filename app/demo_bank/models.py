@@ -1,6 +1,6 @@
 """In-memory data model and fault injection state for Demo Bank."""
-from typing import Dict, Any, Optional
-from pydantic import BaseModel, Field
+from typing import Dict
+from pydantic import BaseModel
 
 class Member(BaseModel):
     member_id: str

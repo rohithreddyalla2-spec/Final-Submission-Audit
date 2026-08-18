@@ -1,10 +1,10 @@
 """Deterministic Replay Engine executing Capability Artifacts step-by-step without LLM calls."""
 import time
-import jinja2
 from typing import Dict, Any, Optional
-from app.artifacts.schema import CapabilityArtifact, Step, StepAction, CheckpointType
+import jinja2
+from app.artifacts.schema import CapabilityArtifact, StepAction, CheckpointType
 from app.surface.base import Surface
-from app.safety.policy import SafetyPolicy, PolicyDecision
+from app.safety.policy import SafetyPolicy
 from app.replay.result import ReplayResult, ReplayStatus, ErrorCode
 
 class ReplayEngine:

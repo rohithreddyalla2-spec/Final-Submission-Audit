@@ -1,6 +1,5 @@
 """CLI entrypoint for running the Demo Bank FastAPI server."""
 import os
-import sys
 import uvicorn
 
 def main():

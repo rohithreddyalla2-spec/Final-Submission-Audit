@@ -1,12 +1,12 @@
 """Capability Artifact Compiler converting discovery trajectory to validated artifacts."""
 import os
-import json
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from app.artifacts.schema import (
     CapabilityArtifact, Step, StepAction, TargetSpec,
-    InputParamDef, OutputParamDef, Checkpoint, CheckpointType
+    InputParamDef, OutputParamDef, Checkpoint
 )
 from app.surface.locator import LocatorSpec
+
 
 def compile_trajectory_to_artifact(
     trajectory: List[Dict[str, Any]],

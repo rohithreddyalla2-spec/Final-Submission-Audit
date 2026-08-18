@@ -1,5 +1,5 @@
 """Robust Locator Strategy and Priority Resolver Model."""
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict
 from pydantic import BaseModel, Field
 
 class LocatorSpec(BaseModel):
